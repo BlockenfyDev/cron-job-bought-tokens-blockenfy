@@ -1,0 +1,361 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Role {
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  deletedAt DateTime?
+  name      String
+  role_sha  String    @unique
+  users     User[]
+}
+
+model User {
+  id                Int                @id @default(autoincrement())
+  first_name        String
+  country           String
+  address           String
+  email             String             @unique
+  tos               Boolean
+  createdAt         DateTime           @default(now())
+  deletedAt         DateTime?
+  roleId            Int
+  birth_date        DateTime
+  document_number   String
+  document_type     String
+  first_last_name   String
+  mobile_phone      String
+  second_last_name  String?
+  second_name       String?
+  wallet            String             @unique
+  email_marketing   Boolean?
+  profile_picture   String?
+  sponsorWallet     String?            @default("")
+  kyc               KYC?
+  Notification      Notification[]
+  projectUsers      ProjectUser[]
+  tosRecord         TOS?
+  role              Role               @relation(fields: [roleId], references: [id])
+  userBankTransfers UserBankTransfer[]
+}
+
+model KYC {
+  id                 Int      @id @default(autoincrement())
+  sumsub_id          String   @unique
+  sumsub_link        String
+  sumsub_information Json
+  sumsub_status      String
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  wallet             String   @unique
+  user               User     @relation(fields: [wallet], references: [wallet])
+}
+
+model TOS {
+  id               Int      @id @default(autoincrement())
+  stamping_id      String
+  certificate_link String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  wallet           String   @unique
+  user             User     @relation(fields: [wallet], references: [wallet])
+}
+
+model Projects {
+  id                             Int                               @id @default(autoincrement())
+  name                           String
+  description                    String
+  createdAt                      DateTime                          @default(now())
+  updatedAt                      DateTime                          @updatedAt
+  transmitter                    String
+  country                        String
+  location                       String
+  asset_type                     String
+  asset_subclass                 String?
+  token_name                     String
+  token_symbol                   String
+  platform                       String?
+  blockchain                     String?
+  token_rights                   String?
+  investment_structure           String?
+  target_market                  String?
+  business_model                 String?
+  website                        String?
+  email                          String?
+  additional_questions           Json?
+  ods                            Json?
+  token_address                  String?
+  restricted_countries           String[]
+  status                         TransactionStatus                 @default(PENDING)
+  realStateOccupiedUnits         Int?
+  realStateTotalUnits            Int?
+  featuredInGeneralSettings1     GeneralProjectSettings?           @relation("FeaturedProject1")
+  featuredInGeneralSettings2     GeneralProjectSettings?           @relation("FeaturedProject2")
+  dates                          ProjectDates?
+  details                        ProjectDetails[]
+  documents                      ProjectDocument[]
+  financials                     ProjectFinancials?
+  images                         ProjectImages[]
+  projectMoneyDistributionRecord ProjectMoneyDistributionRecord[]
+  socialMedia                    ProjectSocialMedia[]
+  tokenTransactionRegistry       ProjectTokenTransactionRegistry[]
+  projectUsers                   ProjectUser[]
+}
+
+model ProjectDetails {
+  id                  Int      @id @default(autoincrement())
+  reasons_invest      String
+  problem_that_solves String
+  impact              String
+  differentiation     String
+  projections_summary String
+  projectId           Int
+  video_link          String?
+  project             Projects @relation(fields: [projectId], references: [id])
+}
+
+model ProjectFinancials {
+  id                            Int      @id @default(autoincrement())
+  max_limit                     Float?
+  soft_limit                    Float?
+  assigned_presale              Float?
+  assigned_public_sale          Float?
+  min_investment                Float?
+  max_investment                Float?
+  launch_price                  Float?
+  prelaunch_price               Float?
+  dividend_yield                Float?
+  gross_tir                     Float?
+  distribution_frequency        String
+  projectId                     Int      @unique
+  investment_period             String
+  investors_accepted            Json
+  total_supply                  Float?
+  max_balance_for_user          Float?
+  InitialInvestmentProjectValue Float?
+  held_tokens_by_promoter       Float?   @default(0)
+  expected_annual_cashflow      Float?   @default(0)
+  expected_net_earnings         Float?   @default(0)
+  project                       Projects @relation(fields: [projectId], references: [id])
+}
+
+model ProjectDates {
+  id                    Int                    @id @default(autoincrement())
+  pre_launch            DateTime?
+  launch                DateTime?
+  token_claim_date      DateTime?
+  finalized             DateTime?
+  projectId             Int                    @unique
+  projectStageMilestone ProjectStageMilestones @default(CREATED)
+  start_fundraising     DateTime?
+  end_claims            DateTime?
+  project               Projects               @relation(fields: [projectId], references: [id])
+}
+
+model ProjectSocialMedia {
+  id                    Int      @id @default(autoincrement())
+  social_media_facebook String?
+  social_media_twitter  String?
+  social_media_linkedin String?
+  projectId             Int
+  project               Projects @relation(fields: [projectId], references: [id])
+}
+
+model ProjectImages {
+  id          Int      @id @default(autoincrement())
+  image_url   String
+  createAt    DateTime @default(now())
+  updateAt    DateTime @updatedAt
+  projectId   Int
+  description String?
+  title       String?
+  project     Projects @relation(fields: [projectId], references: [id])
+}
+
+model ProjectDocument {
+  id           Int      @id @default(autoincrement())
+  createAt     DateTime @default(now())
+  updateAt     DateTime @updatedAt
+  document_url String
+  projectId    Int
+  description  String?
+  title        String?
+  project      Projects @relation(fields: [projectId], references: [id])
+}
+
+model ProjectUser {
+  id        Int      @id @default(autoincrement())
+  wallet    String
+  projectId Int
+  userId    Int
+  createdAt DateTime @default(now())
+  project   Projects @relation(fields: [projectId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([wallet, projectId])
+}
+
+model ProjectMoneyDistributionRecord {
+  id                                Int      @id @default(autoincrement())
+  totalAmountDistributed            Float
+  walletsCount                      Int
+  distributionDetails               Json
+  createdAt                         DateTime @default(now())
+  updatedAt                         DateTime @updatedAt
+  projectId                         Int
+  adminWalletWhoDistributedTheMoney String?
+  project                           Projects @relation(fields: [projectId], references: [id])
+}
+
+model GeneralProjectSettings {
+  id               Int       @id @default(autoincrement())
+  featuredProject1 Int?      @unique
+  featuredProject2 Int?      @unique
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  project1         Projects? @relation("FeaturedProject1", fields: [featuredProject1], references: [id])
+  project2         Projects? @relation("FeaturedProject2", fields: [featuredProject2], references: [id])
+}
+
+model BankTransferPayment {
+  id                      Int               @id @default(autoincrement())
+  bankTransactionId       String            @unique
+  paymentDate             DateTime?
+  paymentSourceBank       String
+  paymentDestinationBank  String?
+  transferredAmount       Float
+  paymentReceipt          String
+  notes                   String?
+  createdAt               DateTime          @default(now())
+  updatedAt               DateTime          @updatedAt
+  adminBankAccountNumber  String
+  adminBankAccountType    String
+  bankTransferType        String
+  tokensSentToTheUser     String
+  transactionHash         String
+  userBankAccountNumber   String
+  userBankAccountType     String
+  adminPaymentReceipt     String?
+  status                  TransactionStatus @default(PENDING)
+  feePercentage           Float             @default(0)
+  transferredAmountInUsdt Float             @default(0)
+  currency                String?
+  userBankTransfers       UserBankTransfer?
+}
+
+model UserBankTransfer {
+  id             Int                 @id @default(autoincrement())
+  walletId       String
+  bankTransferId Int                 @unique
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  approvedBy     String
+  bankTransfer   BankTransferPayment @relation(fields: [bankTransferId], references: [id])
+  user           User                @relation(fields: [walletId], references: [wallet])
+}
+
+model ProjectTokenTransactionRegistry {
+  id                           Int                @id @default(autoincrement())
+  userWhoBuys                  String?
+  userWhoSells                 String?
+  projectTokenAddress          String?
+  status                       TransactionStatus?
+  transactionType              TransactionType?
+  marketType                   MarketType?
+  tokenAmount                  Float?
+  wusdtAmount                  Float?
+  transactionHashOrder         String?
+  transactionHash              String?
+  receiptLink                  String?
+  feesWUSDT                    Float?
+  createdAt                    DateTime           @default(now())
+  updatedAt                    DateTime           @updatedAt
+  projectId                    Int
+  tokenPrice                   Float?
+  purchasePrice                Float?
+  salePrice                    Float?
+  orderBookTransactionSharedId String?
+  project                      Projects           @relation(fields: [projectId], references: [id])
+}
+
+model WusdtTokenTransactionRegistry {
+  id                               Int                @id @default(autoincrement())
+  userWhoBuys                      String?
+  userWhoSells                     String?
+  tokenAmount                      Float?
+  wusdtAmount                      Float?
+  feesWUSDT                        Float?
+  status                           TransactionStatus?
+  transactionType                  TransactionType?
+  transactionHash                  String?
+  receiptLink                      String?
+  createdAt                        DateTime           @default(now())
+  updatedAt                        DateTime           @updatedAt
+  bankTransferPaymentTransactionId Int?
+  currency                         String?
+}
+
+model Notification {
+  id        Int              @id @default(autoincrement())
+  userId    Int
+  message   String
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+  title     String
+  type      NotificationType
+  updatedAt DateTime         @updatedAt
+  User      User             @relation(fields: [userId], references: [id])
+}
+
+model BankTransferFeePercentage {
+  id                             Int      @id @default(autoincrement())
+  buyPlatformTokenFeePercentage  Float
+  sellPlatformTokenFeePercentage Float
+  adminWalletWhoSetTheseFees     String
+  createdAt                      DateTime @default(now())
+}
+
+enum ProjectStageMilestones {
+  PUBLISHED
+  PRE_LAUNCH
+  LAUNCH
+  VESTING
+  TOKEN_CLAIM_PHASE
+  FINALIZED
+  CREATED
+}
+
+enum TransactionType {
+  BUY_WUSDT_VIA_CRYPTO
+  BUY_WUSDT_VIA_BANK_TRANSFER
+  WITHDRAW_WUSDT_VIA_BANK_TRANSFER
+  WITHDRAW_WUSDT_VIA_CRYPTO
+  BUY_PROJECT_TOKEN
+  SELL_PROJECT_TOKEN
+}
+
+enum TransactionStatus {
+  APPROVED
+  PENDING
+  REJECTED
+  CANCELED
+  PAUSED
+  FROZEN
+}
+
+enum MarketType {
+  PRIMARY
+  ORDER_BOOK
+}
+
+enum NotificationType {
+  INFORMATION
+  ALERT
+}

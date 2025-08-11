@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "ES6",
+    "module": "commonjs",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "typeRoots": ["./node_modules/@types", "./types"],
+    "types": [
+      "node",
+      "express",
+      "morgan",
+      "cors",
+      "cookie-parser",
+      "multer"
+    ]
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules"]
+}
