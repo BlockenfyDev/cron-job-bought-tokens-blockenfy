@@ -8,7 +8,7 @@ export const startCronJobs = () => {
     console.log( 'Initializing cron jobs...' );
 
     // Se ejecuta cada 5 segundos
-    cron.schedule( '*/7 * * * * *', async () => {
+    cron.schedule( '*/30 * * * * *', async () => {
         if ( isJobRunning ) {
             // Este log es útil, pero puede ser ruidoso. Puedes comentarlo si lo deseas.
             // console.log( '🕒 Previous poll is still running. Skipping this cycle.' );
